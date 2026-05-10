@@ -4,11 +4,11 @@ Update this file at the end of every session. It is the handoff document between
 
 ## Current Phase
 
-- Phase 4 — Notifications — **NEXT**
+- Phase 5 — Polish — **NEXT**
 
 ## Current Goal
 
-- Build ProfileSheet (Account + Notifications tabs), useNotificationStore, Type 3 smart nudges, notification badge on avatar, tap-to-open-task.
+- Empty states, loading skeletons, error states, offline support, theme transition, "Add to Home Screen" prompt.
 
 ## Completed
 
@@ -35,7 +35,7 @@ Update this file at the end of every session. It is the handoff document between
 
 ## In Progress
 
-- Nothing — Phase 3 complete and deployed. Phase 4 ready to start.
+- Nothing — Phase 4 complete and deployed. Phase 5 ready to start.
 
 ## Completed (Phase 2)
 
@@ -89,21 +89,24 @@ Additional fixes applied after Phase 2:
 - [x] Dashboard header — date, theme toggle, avatar (opens profile), "Here is how your week is going"
 - [x] TypeScript: zero errors. Build: 178 modules, dist/sw.js generated ✓
 
-**Phase 3 COMPLETE ✓ — deployed to todowe.vercel.app**
+**Phase 3 COMPLETE ✓ — deployed and verified in production on todowe.vercel.app**
 
-### Phase 4 — Notifications
-- [ ] Build useNotificationStore — notifications state, clear, delete, clearAll, deleteAll
-- [ ] Seed Type 3 smart nudges on app load — scan tasks for overdue and stalled
-- [ ] Build ProfileSheet — Account tab and Notifications tab
-- [ ] Build notification rows — icon, type label, title, body, time-ago, unread dot, clear button
-- [ ] Wire notification badge on avatar — red dot with unread count
-- [ ] Wire tap-notification-opens-task — clear notification AND open DetailSheet in single action
-- [ ] Wire Type 1 collaboration notifications — Supabase Realtime channel per user
-- [ ] Set up VAPID keys for Web Push
-- [ ] Build push.ts — register service worker, subscribe to push, send subscription to Supabase
-- [ ] Build service worker push handler — display notification on push event
-- [ ] Wire Type 2 reminders — on task save, write rows to task_reminders, schedule push via Edge Function
-- [ ] Test iPhone PWA install prompt flow
+Additional fix applied after Phase 3:
+- [x] Added `vercel.json` with SPA rewrites — fixes 404 on direct URL navigation to /dashboard, /tasks etc.
+
+### Phase 4 — Notifications ✓ COMPLETE
+- [x] Build useNotificationStore — seed, markRead, clearOne, clearAll, deleteOne, deleteCleared, reset
+- [x] Seed Type 3 nudges in TasksPage after fetchAll — overdue (end_time < now) + stalled (Running < 30%)
+- [x] Build ProfileSheet — Account tab (avatar, stats, status msg, sign out) + Notifications tab
+- [x] Notification rows — type icon/label, unread dot, title, body, time-ago, clear/delete button
+- [x] Inbox / Cleared sub-tabs with Clear all and Delete all actions
+- [x] Notification badge on avatar — red dot with unread count in both TasksPage and DashboardPage
+- [x] Tap-notification → clearOne + navigate('/tasks') + open DetailSheet via openTaskId prop
+- [x] Reset notification store on sign-out
+- [ ] Type 1 collaboration (Supabase Realtime) — deferred to post-launch
+- [ ] Web Push / VAPID / Edge Function reminders — deferred to post-launch
+
+**Phase 4 COMPLETE ✓ — deployed to todowe.vercel.app**
 
 ### Phase 5 — Polish
 - [ ] Dark/light theme transition — smooth CSS transition on all surfaces
