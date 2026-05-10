@@ -13,12 +13,12 @@ export const usePeopleStore = create<PeopleStore>((set, get) => ({
   people: [],
 
   fetchPeople: async (userId) => {
-    // Fetch all users who share at least one task with the current user
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('task_assignees')
       .select('user_id')
       .neq('user_id', userId)
 
+    if (error) { console.error('[fetchPeople] error:', error.message); return }
     if (!data || data.length === 0) return
 
     const ids = [...new Set(data.map((r) => r.user_id as string))]

@@ -12,15 +12,14 @@ export interface TaskInput {
   end_time: string
   project_id: string | null
   assignee_ids: string[]
-  reminders: string[] // minutes_before strings
+  reminders: string[] // minutes_before as strings
 }
 
 interface TaskStore {
   tasks: Record<string, Task[]> // keyed by YYYY-MM-DD
   loading: boolean
-  fetchByDate: (date: string, userId: string) => Promise<void>
   fetchAll: (userId: string) => Promise<void>
-  addTask: (input: TaskInput, ownerId: string) => Promise<Task | null>
+  addTask: (input: TaskInput, ownerId: string) => Promise<Task>
   updateTask: (id: string, input: Partial<TaskInput>) => Promise<void>
   deleteTask: (id: string, date: string) => Promise<void>
 }
@@ -29,51 +28,61 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   tasks: {},
   loading: false,
 
-  fetchByDate: async (date, userId) => {
-    set({ loading: true })
-    const { data, error } = await supabase
-      .from('tasks')
-      .select(`
-        *,
-        task_assignees(user_id),
-        task_reminders(minutes_before)
-      `)
-      .or(`owner_id.eq.${userId},task_assignees.user_id.eq.${userId}`)
-      .eq('date', date)
-      .order('start_time')
-
-    if (!error && data) {
-      const mapped: Task[] = data.map(normalise)
-      set((s) => ({ tasks: { ...s.tasks, [date]: mapped }, loading: false }))
-    } else {
-      set({ loading: false })
-    }
-  },
-
   fetchAll: async (userId) => {
     set({ loading: true })
+
+    // Simple tasks-only query — no embedded resources (avoids FK-to-auth.users issues)
     const { data, error } = await supabase
       .from('tasks')
-      .select(`
-        *,
-        task_assignees(user_id),
-        task_reminders(minutes_before)
-      `)
+      .select('*')
       .eq('owner_id', userId)
       .order('date')
       .order('start_time')
 
-    if (!error && data) {
-      const grouped: Record<string, Task[]> = {}
-      for (const row of data) {
-        const t = normalise(row)
-        if (!grouped[t.date]) grouped[t.date] = []
-        grouped[t.date].push(t)
-      }
-      set({ tasks: grouped, loading: false })
-    } else {
+    if (error) {
+      console.error('[fetchAll] tasks error:', error.message)
       set({ loading: false })
+      return
     }
+
+    // Separately fetch assignees and reminders
+    const taskIds = (data ?? []).map((r) => r.id as string)
+    let assigneeMap: Record<string, string[]>   = {}
+    let reminderMap: Record<string, string[]>   = {}
+
+    if (taskIds.length > 0) {
+      const { data: assignees, error: ae } = await supabase
+        .from('task_assignees')
+        .select('task_id, user_id')
+        .in('task_id', taskIds)
+
+      if (ae) console.error('[fetchAll] assignees error:', ae.message)
+      for (const a of assignees ?? []) {
+        const id = a.task_id as string
+        if (!assigneeMap[id]) assigneeMap[id] = []
+        assigneeMap[id].push(a.user_id as string)
+      }
+
+      const { data: reminders, error: re } = await supabase
+        .from('task_reminders')
+        .select('task_id, minutes_before')
+        .in('task_id', taskIds)
+
+      if (re) console.error('[fetchAll] reminders error:', re.message)
+      for (const r of reminders ?? []) {
+        const id = r.task_id as string
+        if (!reminderMap[id]) reminderMap[id] = []
+        reminderMap[id].push(String(r.minutes_before))
+      }
+    }
+
+    const grouped: Record<string, Task[]> = {}
+    for (const row of data ?? []) {
+      const t = buildTask(row, assigneeMap, reminderMap)
+      if (!grouped[t.date]) grouped[t.date] = []
+      grouped[t.date].push(t)
+    }
+    set({ tasks: grouped, loading: false })
   },
 
   addTask: async (input, ownerId) => {
@@ -90,38 +99,33 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         start_time: input.start_time,
         end_time:   input.end_time,
       })
-      .select()
+      .select('*')
       .single()
 
     if (error) {
-      console.error('[addTask] Supabase insert error:', error.message, error.details, error.hint)
+      console.error('[addTask] insert error:', error.message, error.details, error.hint)
       throw new Error(error.message)
     }
-    if (!task) {
-      console.error('[addTask] No data returned from insert')
-      throw new Error('Task creation returned no data')
-    }
+    if (!task) throw new Error('Task creation returned no data')
 
     const taskRow = task as Record<string, unknown>
     const taskId  = taskRow.id as string
 
-    // Only insert assignees that are real Supabase auth UUIDs (not local_... ids)
-    const validAssigneeIds = input.assignee_ids.filter(
-      (uid) => !uid.startsWith('local_') && uid !== ownerId
-    )
-    if (validAssigneeIds.length > 0) {
-      const { error: assigneeErr } = await supabase.from('task_assignees').insert(
-        validAssigneeIds.map((uid) => ({ task_id: taskId, user_id: uid }))
-      )
-      if (assigneeErr) console.error('[addTask] Assignees insert error:', assigneeErr.message)
+    // Insert assignees — only real UUIDs (not local_ ids)
+    const validIds = input.assignee_ids.filter((uid) => !uid.startsWith('local_'))
+    if (validIds.length > 0) {
+      const { error: ae } = await supabase
+        .from('task_assignees')
+        .insert(validIds.map((uid) => ({ task_id: taskId, user_id: uid })))
+      if (ae) console.error('[addTask] assignees error:', ae.message)
     }
 
     // Insert reminders
     if (input.reminders.length > 0) {
-      const { error: reminderErr } = await supabase.from('task_reminders').insert(
-        input.reminders.map((r) => ({ task_id: taskId, minutes_before: parseInt(r) }))
-      )
-      if (reminderErr) console.error('[addTask] Reminders insert error:', reminderErr.message)
+      const { error: re } = await supabase
+        .from('task_reminders')
+        .insert(input.reminders.map((r) => ({ task_id: taskId, minutes_before: parseInt(r) })))
+      if (re) console.error('[addTask] reminders error:', re.message)
     }
 
     const newTask: Task = {
@@ -159,14 +163,16 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     if (input.project_id !== undefined) updates.project_id = input.project_id
 
     if (Object.keys(updates).length > 0) {
-      await supabase.from('tasks').update(updates).eq('id', id)
+      const { error } = await supabase.from('tasks').update(updates).eq('id', id)
+      if (error) console.error('[updateTask] error:', error.message)
     }
 
     if (input.assignee_ids !== undefined) {
       await supabase.from('task_assignees').delete().eq('task_id', id)
-      if (input.assignee_ids.length > 0) {
+      const validIds = input.assignee_ids.filter((uid) => !uid.startsWith('local_'))
+      if (validIds.length > 0) {
         await supabase.from('task_assignees').insert(
-          input.assignee_ids.map((uid) => ({ task_id: id, user_id: uid }))
+          validIds.map((uid) => ({ task_id: id, user_id: uid }))
         )
       }
     }
@@ -180,10 +186,9 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       }
     }
 
-    // Refresh the task in store
+    // Optimistic state update
     const current = get().tasks
-    const allDays = Object.entries(current)
-    for (const [date, dayTasks] of allDays) {
+    for (const [date, dayTasks] of Object.entries(current)) {
       const idx = dayTasks.findIndex((t) => t.id === id)
       if (idx !== -1) {
         const updated = { ...dayTasks[idx], ...updates }
@@ -197,7 +202,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   },
 
   deleteTask: async (id, date) => {
-    await supabase.from('tasks').delete().eq('id', id)
+    const { error } = await supabase.from('tasks').delete().eq('id', id)
+    if (error) { console.error('[deleteTask] error:', error.message); return }
     set((s) => ({
       tasks: {
         ...s.tasks,
@@ -207,11 +213,14 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   },
 }))
 
-function normalise(row: Record<string, unknown>): Task {
-  const assignees = (row.task_assignees as { user_id: string }[] | null) ?? []
-  const reminders = (row.task_reminders as { minutes_before: number }[] | null) ?? []
+function buildTask(
+  row: Record<string, unknown>,
+  assigneeMap: Record<string, string[]>,
+  reminderMap: Record<string, string[]>
+): Task {
+  const id = row.id as string
   return {
-    id:         row.id as string,
+    id,
     owner_id:   row.owner_id as string,
     project_id: row.project_id as string | null,
     title:      row.title as string,
@@ -222,7 +231,9 @@ function normalise(row: Record<string, unknown>): Task {
     start_time: row.start_time as string,
     end_time:   row.end_time as string,
     created_at: row.created_at as string,
-    assignees:  assignees.map((a) => ({ id: a.user_id, name: '', email: '', initials: '', color: '', avatar_url: null })),
-    reminders:  reminders.map((r) => String(r.minutes_before)),
+    assignees:  (assigneeMap[id] ?? []).map((uid) => ({
+      id: uid, name: '', email: '', initials: '', color: '', avatar_url: null,
+    })),
+    reminders: reminderMap[id] ?? [],
   }
 }
