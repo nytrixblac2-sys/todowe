@@ -4,11 +4,11 @@ Update this file at the end of every session. It is the handoff document between
 
 ## Current Phase
 
-- Phase 3 — Projects & Dashboard — **NEXT**
+- Phase 4 — Notifications — **NEXT**
 
 ## Current Goal
 
-- Build DashboardPage (smart message, status grid, project tracker, Up Next list), wire useProjectStore to dashboard, integrate OpenAI GPT-4o-mini smart message.
+- Build ProfileSheet (Account + Notifications tabs), useNotificationStore, Type 3 smart nudges, notification badge on avatar, tap-to-open-task.
 
 ## Completed
 
@@ -35,7 +35,7 @@ Update this file at the end of every session. It is the handoff document between
 
 ## In Progress
 
-- Nothing — Phase 2 fully verified and deployed. Phase 3 ready to start.
+- Nothing — Phase 3 complete and deployed. Phase 4 ready to start.
 
 ## Completed (Phase 2)
 
@@ -77,15 +77,19 @@ Additional fixes applied after Phase 2:
 - [ ] Wire multi-reminder picker — preset pills (toggle on/off) + CustomReminderInput
 - [ ] Build usePeopleStore — fetch collaborators, add by email, generate initials and colour from email
 
-### Phase 3 — Projects & Dashboard
-- [ ] Build useProjectStore — fetch projects, create inline, projColor helper
-- [ ] Wire project selector in AddSheet and DetailSheet
-- [ ] Build DashboardPage layout
-- [ ] Build smart message — call OpenAI GPT-4o-mini with completion rate, cache in store
-- [ ] Build status grid — 2×2 count cards for all 5 statuses
-- [ ] Build completion breakdown — progress bars per status
-- [ ] Build project tracker — progress bar, done/total, percentage per project
-- [ ] Build Up Next list — upcoming incomplete tasks across all days
+### Phase 3 — Projects & Dashboard ✓ COMPLETE
+- [x] Build useProjectStore — fetch projects, create inline, projColor helper
+- [x] Wire project selector in AddSheet and DetailSheet
+- [x] Build DashboardPage — smart message, status grid, breakdown, project tracker, Up Next
+- [x] Smart message — OpenAI GPT-4o-mini (local fallback if no key), cached per session with useRef
+- [x] Status grid — 5 cards in 3+2 row layout, each with count + colored bar
+- [x] Completion breakdown — per-status progress bars as % of all tasks
+- [x] Project tracker — color dot, name, progress bar, done/total, percentage
+- [x] Up Next — next 5 incomplete tasks from today onward, sorted by date/time
+- [x] Dashboard header — date, theme toggle, avatar (opens profile), "Here is how your week is going"
+- [x] TypeScript: zero errors. Build: 178 modules, dist/sw.js generated ✓
+
+**Phase 3 COMPLETE ✓ — deployed to todowe.vercel.app**
 
 ### Phase 4 — Notifications
 - [ ] Build useNotificationStore — notifications state, clear, delete, clearAll, deleteAll
