@@ -4,11 +4,11 @@ Update this file at the end of every session. It is the handoff document between
 
 ## Current Phase
 
-- Phase 1 — Foundation — **IN PROGRESS**
+- Phase 2 — Calendar & Tasks — **IN PROGRESS**
 
 ## Current Goal
 
-- Create Supabase database tables and deploy to Vercel so todowe.vercel.app is live with the login screen.
+- Build DayStrip, TaskCard, AddSheet, DetailSheet, useTaskStore, usePeopleStore — full task CRUD working in the browser.
 
 ## Completed
 
@@ -27,23 +27,41 @@ Update this file at the end of every session. It is the handoff document between
 - [x] Configure PWA — vite-plugin-pwa, manifest with icons, service worker (generateSW mode)
 - [x] Production build passes: `npx vite build` — 84 modules, dist/sw.js generated
 - [x] TypeScript passes: `npx tsc --noEmit` — zero errors
+- [x] Supabase tables created with RLS: projects, tasks, task_assignees, task_reminders, notifications
+- [x] Deployed to Vercel — todowe.vercel.app live, login working end to end ✓
+- [x] GitHub → Vercel auto-deploy pipeline active
+
+**Phase 1 COMPLETE**
 
 ## In Progress
 
-- [ ] Create Supabase database tables (SQL ready — user needs to run in Supabase SQL editor)
-- [ ] Enable row-level security on all tables
-- [ ] Deploy to Vercel — confirm todowe.vercel.app is live
-- [ ] Set up GitHub → Vercel auto-deploy pipeline
+- Nothing — Phase 2 code complete, pending deploy verification.
+
+## Completed (Phase 2)
+
+- [x] Build `src/store/useTaskStore.ts` — fetchAll, fetchByDate, addTask, updateTask, deleteTask with Supabase
+- [x] Build `src/store/useProjectStore.ts` — fetchProjects, addProject with Supabase
+- [x] Build `src/store/usePeopleStore.ts` — fetchPeople, addByEmail
+- [x] Build `src/components/Avatar.tsx` — Av + AvatarRow matching v21 exactly
+- [x] Build `src/components/DayStrip.tsx` — month nav, scroll-to-selected, dot indicators
+- [x] Build `src/components/TaskCard.tsx` — notched layout, kebab menu, progress bar, diamond icon
+- [x] Build `src/components/CustomReminderInput.tsx` — number + unit selector, converts to minutes
+- [x] Build `src/components/AddSheet.tsx` — full form: title, category, status, times, project, people, reminders
+- [x] Build `src/components/DetailSheet.tsx` — edit form pre-filled, progress slider
+- [x] Build `src/hooks/useGreeting.ts` — Good morning / afternoon / evening
+- [x] Build `src/pages/TasksPage.tsx` — header, greeting, day strip, timeline, FAB, sheets wired
+- [x] Update `src/App.tsx` — BottomNav component, placeholder profile modal, route shell
+- [x] TypeScript: zero errors. Build: 94 modules, dist/sw.js generated ✓
+
+**Phase 2 COMPLETE — push to GitHub to deploy**
 
 ## Next Up (in order)
 
-### Remaining Phase 1
-- [ ] User runs Supabase SQL (provided below in Session Notes)
-- [ ] User creates GitHub repo and pushes code
-- [ ] User connects Vercel to GitHub repo, sets VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY env vars
-- [ ] Confirm login screen is live at todowe.vercel.app
+### Phase 2 — Deploy
+- [ ] Push to GitHub → Vercel auto-deploys Phase 2
+- [ ] Verify task CRUD works end to end in the browser (create, edit, delete, day strip navigation)
 
-### Phase 2 — Calendar & Tasks
+### Phase 3 — Projects & Dashboard
 - [ ] Build DayStrip component — horizontal scroll, month nav, dot indicators, scroll-to-selected
 - [ ] Build TasksPage layout — header with greeting, day strip, timeline, FAB
 - [ ] Build useGreeting hook — Good morning / Good afternoon / Good evening
