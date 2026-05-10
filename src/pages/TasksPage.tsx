@@ -5,6 +5,7 @@ import { useThemeStore } from '../store/useThemeStore'
 import { useTaskStore } from '../store/useTaskStore'
 import { usePeopleStore } from '../store/usePeopleStore'
 import { useProjectStore } from '../store/useProjectStore'
+import { useNotificationStore } from '../store/useNotificationStore'
 import { useGreeting } from '../hooks/useGreeting'
 import { Av } from '../components/Avatar'
 import DayStrip from '../components/DayStrip'
@@ -23,10 +24,12 @@ function timeLabel(h: number) {
 }
 
 interface TasksPageProps {
-  onOpenProfile: () => void
+  onOpenProfile:     () => void
+  openTaskId?:       string | null
+  onClearOpenTaskId?: () => void
 }
 
-export default function TasksPage({ onOpenProfile }: TasksPageProps) {
+export default function TasksPage({ onOpenProfile, openTaskId, onClearOpenTaskId }: TasksPageProps) {
   const today = new Date()
 
   const { user }                            = useAuthStore()
@@ -34,6 +37,8 @@ export default function TasksPage({ onOpenProfile }: TasksPageProps) {
   const { tasks, fetchAll, addTask, updateTask, deleteTask } = useTaskStore()
   const { people, fetchPeople, addByEmail } = usePeopleStore()
   const { projects, fetchProjects, addProject } = useProjectStore()
+  const { seedNudges }                      = useNotificationStore()
+  const unreadCount = useNotificationStore((s) => s.notifications.filter((n) => !n.read && !n.cleared).length)
 
   const [selected,  setSelected]  = useState(today)
   const [viewYear,  setViewYear]  = useState(today.getFullYear())
@@ -42,8 +47,7 @@ export default function TasksPage({ onOpenProfile }: TasksPageProps) {
   const [detail,    setDetail]    = useState<Task | null>(null)
   const [editing,   setEditing]   = useState<Task | null>(null)
 
-  const greeting    = useGreeting(user?.name.split(' ')[0] ?? '')
-  const unreadCount = 0 // wired in Phase 4
+  const greeting = useGreeting(user?.name.split(' ')[0] ?? '')
 
   useEffect(() => {
     if (!user) return
@@ -51,6 +55,28 @@ export default function TasksPage({ onOpenProfile }: TasksPageProps) {
     fetchPeople(user.id)
     fetchProjects(user.id)
   }, [user, fetchAll, fetchPeople, fetchProjects])
+
+  // Seed Type 3 nudges once tasks are loaded
+  useEffect(() => {
+    if (!user || Object.keys(tasks).length === 0) return
+    seedNudges(tasks, user.id)
+  }, [tasks, user, seedNudges])
+
+  // Open task from notification tap
+  useEffect(() => {
+    if (!openTaskId) return
+    for (const dayTasks of Object.values(tasks)) {
+      const found = dayTasks.find((t) => t.id === openTaskId)
+      if (found) {
+        setDetail(found)
+        setSelected(new Date(found.date + 'T00:00:00'))
+        setViewYear(new Date(found.date + 'T00:00:00').getFullYear())
+        setViewMonth(new Date(found.date + 'T00:00:00').getMonth())
+        onClearOpenTaskId?.()
+        break
+      }
+    }
+  }, [openTaskId, tasks, onClearOpenTaskId])
 
   const selectedKey = dk(selected)
   const dayTasks    = tasks[selectedKey] ?? []

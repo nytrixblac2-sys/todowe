@@ -5,6 +5,7 @@ import { useAuthStore } from '../store/useAuthStore'
 import { useThemeStore } from '../store/useThemeStore'
 import { useTaskStore } from '../store/useTaskStore'
 import { useProjectStore } from '../store/useProjectStore'
+import { useNotificationStore } from '../store/useNotificationStore'
 import { Av } from '../components/Avatar'
 import type { TaskStatus } from '../types'
 
@@ -48,6 +49,8 @@ export default function DashboardPage({ onOpenProfile }: Props) {
   const { isDark, toggle: toggleTheme }     = useThemeStore()
   const { tasks, fetchAll }                 = useTaskStore()
   const { projects, fetchProjects }         = useProjectStore()
+
+  const unreadCount = useNotificationStore((s) => s.notifications.filter((n) => !n.read && !n.cleared).length)
 
   const [smartMsg,    setSmartMsg]    = useState('')
   const [msgLoading,  setMsgLoading]  = useState(false)
@@ -176,8 +179,18 @@ export default function DashboardPage({ onOpenProfile }: Props) {
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10,
               }}>{isDark ? '☽' : '☀'}</div>
             </button>
-            <div onClick={onOpenProfile} style={{ cursor: 'pointer' }}>
+            <div onClick={onOpenProfile} style={{ cursor: 'pointer', position: 'relative' }}>
               <Av person={user} size={44} borderColor={C.accent} />
+              {unreadCount > 0 && (
+                <div style={{
+                  position: 'absolute', top: -3, right: -3,
+                  width: 16, height: 16, borderRadius: '50%',
+                  background: '#f87171',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 8, fontWeight: 700, color: '#fff',
+                  fontFamily: "'DM Mono', monospace", border: `2px solid ${C.bg}`,
+                }}>{unreadCount > 9 ? '9+' : unreadCount}</div>
+              )}
             </div>
           </div>
         </div>
