@@ -66,7 +66,7 @@ function AppShell() {
       ) : <Navigate to="/login" replace />} />
       <Route path="/dashboard" element={user ? (
         <>
-          <DashboardPage />
+          <DashboardPage onOpenProfile={() => setShowProfile(true)} />
           <BottomNav />
         </>
       ) : <Navigate to="/login" replace />} />
