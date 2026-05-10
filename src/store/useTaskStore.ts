@@ -93,26 +93,51 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       .select()
       .single()
 
-    if (error || !task) return null
+    if (error) {
+      console.error('[addTask] Supabase insert error:', error.message, error.details, error.hint)
+      throw new Error(error.message)
+    }
+    if (!task) {
+      console.error('[addTask] No data returned from insert')
+      throw new Error('Task creation returned no data')
+    }
 
-    // Insert assignees
-    if (input.assignee_ids.length > 0) {
-      await supabase.from('task_assignees').insert(
-        input.assignee_ids.map((uid) => ({ task_id: task.id, user_id: uid }))
+    const taskRow = task as Record<string, unknown>
+    const taskId  = taskRow.id as string
+
+    // Only insert assignees that are real Supabase auth UUIDs (not local_... ids)
+    const validAssigneeIds = input.assignee_ids.filter(
+      (uid) => !uid.startsWith('local_') && uid !== ownerId
+    )
+    if (validAssigneeIds.length > 0) {
+      const { error: assigneeErr } = await supabase.from('task_assignees').insert(
+        validAssigneeIds.map((uid) => ({ task_id: taskId, user_id: uid }))
       )
+      if (assigneeErr) console.error('[addTask] Assignees insert error:', assigneeErr.message)
     }
 
     // Insert reminders
     if (input.reminders.length > 0) {
-      await supabase.from('task_reminders').insert(
-        input.reminders.map((r) => ({ task_id: task.id, minutes_before: parseInt(r) }))
+      const { error: reminderErr } = await supabase.from('task_reminders').insert(
+        input.reminders.map((r) => ({ task_id: taskId, minutes_before: parseInt(r) }))
       )
+      if (reminderErr) console.error('[addTask] Reminders insert error:', reminderErr.message)
     }
 
     const newTask: Task = {
-      ...task,
-      assignees: [],
-      reminders: input.reminders,
+      id:         taskId,
+      owner_id:   taskRow.owner_id as string,
+      project_id: taskRow.project_id as string | null,
+      title:      taskRow.title as string,
+      category:   taskRow.category as Task['category'],
+      status:     taskRow.status as Task['status'],
+      progress:   taskRow.progress as number,
+      date:       taskRow.date as string,
+      start_time: taskRow.start_time as string,
+      end_time:   taskRow.end_time as string,
+      created_at: taskRow.created_at as string,
+      assignees:  [],
+      reminders:  input.reminders,
     }
 
     set((s) => {

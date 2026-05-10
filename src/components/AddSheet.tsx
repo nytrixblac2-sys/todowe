@@ -43,7 +43,7 @@ interface Props {
   projects:    Project[]
   selectedDate: Date
   onClose:     () => void
-  onAdd:       (payload: AddTaskPayload) => void
+  onAdd:       (payload: AddTaskPayload) => Promise<void>
   onAddPerson: (email: string) => Person
   onAddProject:(name: string) => Project | Promise<Project>
 }
@@ -63,6 +63,8 @@ export default function AddSheet({
   const [newEmail,  setNewEmail]  = useState('')
   const [addingP,   setAddingP]   = useState(false)
   const [reminders, setReminders] = useState<string[]>([])
+  const [saving,    setSaving]    = useState(false)
+  const [saveErr,   setSaveErr]   = useState('')
 
   const allPeople: (AuthUser | Person)[] = [currentUser, ...people]
 
@@ -79,23 +81,31 @@ export default function AddSheet({
   }
 
   async function submit() {
-    if (!title.trim()) return
-    let pid = projId
-    if (projId === '__new__' && newProj.trim()) {
-      const p = await onAddProject(newProj.trim())
-      pid = p.id
+    if (!title.trim()) { setSaveErr('Task name is required'); return }
+    setSaving(true)
+    setSaveErr('')
+    try {
+      let pid = projId
+      if (projId === '__new__' && newProj.trim()) {
+        const p = await onAddProject(newProj.trim())
+        pid = p.id
+      }
+      await onAdd({
+        title,
+        category:     cat,
+        status,
+        start_time:   startTime,
+        end_time:     endTime,
+        project_id:   pid || null,
+        assignee_ids: selIds,
+        reminders,
+        progress:     status === 'completed' ? 100 : 0,
+      })
+    } catch (err) {
+      setSaveErr(err instanceof Error ? err.message : 'Failed to create task')
+    } finally {
+      setSaving(false)
     }
-    onAdd({
-      title,
-      category:    cat,
-      status,
-      start_time:  startTime,
-      end_time:    endTime,
-      project_id:  pid || null,
-      assignee_ids: selIds,
-      reminders,
-      progress:    status === 'completed' ? 100 : 0,
-    })
   }
 
   return (
@@ -224,12 +234,20 @@ export default function AddSheet({
           </div>
         )}
 
-        <button onClick={submit} style={{
+        {saveErr && (
+          <div style={{ color: '#f87171', fontSize: 11, fontFamily: "'DM Mono', monospace", marginBottom: 10 }}>
+            {saveErr}
+          </div>
+        )}
+
+        <button onClick={submit} disabled={saving} style={{
           width: '100%', background: C.accent, color: C.bg, border: 'none',
           borderRadius: 16, padding: 15,
           fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 16,
-          cursor: 'pointer', boxShadow: `0 8px 24px ${C.accent}44`, marginTop: 6, letterSpacing: .3,
-        }}>Add Task</button>
+          cursor: saving ? 'not-allowed' : 'pointer',
+          boxShadow: `0 8px 24px ${C.accent}44`, marginTop: 6, letterSpacing: .3,
+          opacity: saving ? 0.7 : 1,
+        }}>{saving ? 'Saving…' : 'Add Task'}</button>
       </div>
     </div>
   )

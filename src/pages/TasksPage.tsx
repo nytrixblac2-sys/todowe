@@ -84,6 +84,7 @@ export default function TasksPage({ onOpenProfile }: TasksPageProps) {
   async function handleAdd(payload: AddTaskPayload) {
     if (!user) return
     await addTask({ ...payload, date: selectedKey }, user.id)
+    // addTask throws on error (caught by AddSheet), so reaching here means success
     setShowAdd(false)
   }
 
