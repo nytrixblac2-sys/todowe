@@ -4,11 +4,11 @@ Update this file at the end of every session. It is the handoff document between
 
 ## Current Phase
 
-- Phase 2 — Calendar & Tasks — **IN PROGRESS**
+- Phase 3 — Projects & Dashboard — **NEXT**
 
 ## Current Goal
 
-- Build DayStrip, TaskCard, AddSheet, DetailSheet, useTaskStore, usePeopleStore — full task CRUD working in the browser.
+- Build DashboardPage (smart message, status grid, project tracker, Up Next list), wire useProjectStore to dashboard, integrate OpenAI GPT-4o-mini smart message.
 
 ## Completed
 
@@ -35,7 +35,7 @@ Update this file at the end of every session. It is the handoff document between
 
 ## In Progress
 
-- Nothing — Phase 2 code complete, pending deploy verification.
+- Nothing — Phase 2 fully verified and deployed. Phase 3 ready to start.
 
 ## Completed (Phase 2)
 
@@ -53,13 +53,17 @@ Update this file at the end of every session. It is the handoff document between
 - [x] Update `src/App.tsx` — BottomNav component, placeholder profile modal, route shell
 - [x] TypeScript: zero errors. Build: 94 modules, dist/sw.js generated ✓
 
-**Phase 2 COMPLETE — push to GitHub to deploy**
+**Phase 2 COMPLETE ✓ — verified in production on todowe.vercel.app**
+
+Additional fixes applied after Phase 2:
+- [x] Rewrote fetchAll to use separate queries (not embedded resources) — fixed 500 errors from PostgREST introspecting auth.users FK
+- [x] Removed FK from task_assignees.user_id and notifications.user_id (no FK to auth.users)
+- [x] Made addTask throw on error (not silently return null) — fixed "nothing happens" on task create
+- [x] Typed onAdd as Promise<void> in AddSheet — fixed error swallowing
+- [x] Generated PWA icons (pwa-192x192.png, pwa-512x512.png, apple-touch-icon.png) via scripts/generate-icons.cjs
+- [x] Fixed deprecated apple-mobile-web-app-capable → mobile-web-app-capable in index.html
 
 ## Next Up (in order)
-
-### Phase 2 — Deploy
-- [ ] Push to GitHub → Vercel auto-deploys Phase 2
-- [ ] Verify task CRUD works end to end in the browser (create, edit, delete, day strip navigation)
 
 ### Phase 3 — Projects & Dashboard
 - [ ] Build DayStrip component — horizontal scroll, month nav, dot indicators, scroll-to-selected
