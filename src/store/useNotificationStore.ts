@@ -9,6 +9,19 @@ function fmtTime(t: string): string {
   return h > 12 ? `${h - 12}:${m} pm` : h === 12 ? `12:${m} pm` : `${h}:${m} am`
 }
 
+// Persists which task+type nudges have been created so they never repeat across sessions
+const NUDGE_LOG_KEY = 'todowe-nudge-log'
+function getNudgeLog(): Set<string> {
+  try { return new Set(JSON.parse(localStorage.getItem(NUDGE_LOG_KEY) ?? '[]') as string[]) }
+  catch { return new Set() }
+}
+function persistNudge(key: string) {
+  try {
+    const s = getNudgeLog(); s.add(key)
+    localStorage.setItem(NUDGE_LOG_KEY, JSON.stringify([...s]))
+  } catch {}
+}
+
 interface NotificationStore {
   notifications: Notification[]
   seedNudges:    (tasks: Record<string, Task[]>, userId: string) => void
@@ -20,16 +33,13 @@ interface NotificationStore {
   reset:         () => void
 }
 
-export const useNotificationStore = create<NotificationStore>((set, get) => ({
+export const useNotificationStore = create<NotificationStore>((set) => ({
   notifications: [],
 
   seedNudges: (tasks, userId) => {
-    const todayStr = new Date().toISOString().slice(0, 10)
-    const nowMs    = Date.now()
-    const existing = get().notifications
-
-    // Track which task+type pairs already exist (cleared or not) to avoid duplicates
-    const existingKeys = new Set(existing.map((n) => `${n.task_id}:${n.type}`))
+    const todayStr  = new Date().toISOString().slice(0, 10)
+    const nowMs     = Date.now()
+    const firedLog  = getNudgeLog() // persisted across sessions — nudges never repeat
 
     const newNudges: Notification[] = []
 
@@ -37,39 +47,29 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
       for (const t of dayTasks) {
         if (t.status === 'completed' || t.status === 'rejected') continue
 
-        // Supabase time columns return "HH:MM:SS" — omit ":00" suffix to avoid invalid date string
-        const endMs = new Date(`${date}T${t.end_time}`).getTime()
+        const overdueKey  = `${t.id}:nudge_overdue`
+        const stalledKey  = `${t.id}:nudge_stalled`
+        const endMs       = new Date(`${date}T${t.end_time}`).getTime()
 
-        if (endMs < nowMs && !existingKeys.has(`${t.id}:nudge_overdue`)) {
+        if (endMs < nowMs && !firedLog.has(overdueKey)) {
           newNudges.push({
-            id:         makeId(),
-            user_id:    userId,
-            task_id:    t.id,
-            type:       'nudge_overdue',
-            title:      'Overdue task',
-            body:       `"${t.title}" was due at ${fmtTime(t.end_time)} and is still not complete.`,
-            read:       false,
-            cleared:    false,
-            created_at: new Date().toISOString(),
+            id: makeId(), user_id: userId, task_id: t.id,
+            type: 'nudge_overdue', title: 'Overdue task',
+            body: `"${t.title}" was due at ${fmtTime(t.end_time)} and is still not complete.`,
+            read: false, cleared: false, created_at: new Date().toISOString(),
           })
+          persistNudge(overdueKey)
           continue
         }
 
-        if (
-          t.status === 'running' && t.progress < 30 &&
-          date <= todayStr && !existingKeys.has(`${t.id}:nudge_stalled`)
-        ) {
+        if (t.status === 'running' && t.progress < 30 && date <= todayStr && !firedLog.has(stalledKey)) {
           newNudges.push({
-            id:         makeId(),
-            user_id:    userId,
-            task_id:    t.id,
-            type:       'nudge_stalled',
-            title:      'Stalled task',
-            body:       `"${t.title}" is Running but only at ${t.progress}% progress.`,
-            read:       false,
-            cleared:    false,
-            created_at: new Date().toISOString(),
+            id: makeId(), user_id: userId, task_id: t.id,
+            type: 'nudge_stalled', title: 'Stalled task',
+            body: `"${t.title}" is Running but only at ${t.progress}% progress.`,
+            read: false, cleared: false, created_at: new Date().toISOString(),
           })
+          persistNudge(stalledKey)
         }
       }
     }
@@ -77,14 +77,11 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     if (newNudges.length > 0) {
       set((s) => ({ notifications: [...s.notifications, ...newNudges] }))
 
-      // Fire system notifications for each new nudge so they appear on the phone
       if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
         for (const n of newNudges) {
           new Notification(`Todowe — ${n.title}`, {
-            body:  n.body,
-            icon:  '/pwa-192x192.png',
-            badge: '/pwa-192x192.png',
-            tag:   `${n.task_id}:${n.type}`, // deduplicates if triggered again
+            body: n.body, icon: '/pwa-192x192.png', badge: '/pwa-192x192.png',
+            tag:  `${n.task_id}:${n.type}`,
           })
         }
       }
@@ -111,5 +108,8 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     notifications: s.notifications.filter((n) => !n.cleared),
   })),
 
-  reset: () => set({ notifications: [] }),
+  reset: () => {
+    try { localStorage.removeItem(NUDGE_LOG_KEY) } catch {}
+    set({ notifications: [] })
+  },
 }))

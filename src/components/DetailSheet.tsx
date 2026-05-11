@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { C, STATUS, CAT_ICON, REMINDER_OPTIONS } from '../theme'
 import { Av } from './Avatar'
 import CustomReminderInput from './CustomReminderInput'
@@ -37,6 +37,16 @@ export default function DetailSheet({
 
   const st = STATUS[status]
   const allPeople: (AuthUser | Person)[] = [currentUser, ...people]
+  const sheetRef = useRef<HTMLDivElement>(null)
+
+  // Non-passive touchmove listener: prevents background panning on iOS while allowing sheet scroll
+  useEffect(() => {
+    const prevent = (e: TouchEvent) => {
+      if (!sheetRef.current?.contains(e.target as Node)) e.preventDefault()
+    }
+    document.addEventListener('touchmove', prevent, { passive: false })
+    return () => document.removeEventListener('touchmove', prevent)
+  }, [])
 
   function togglePerson(id: string) {
     setSelIds((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id])
@@ -78,8 +88,8 @@ export default function DetailSheet({
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#000a', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 200 }} onClick={onClose} onTouchMove={(e) => e.preventDefault()}>
-      <div onClick={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()} style={{
+    <div style={{ position: 'fixed', inset: 0, background: '#000a', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 200 }} onClick={onClose}>
+      <div ref={sheetRef} onClick={(e) => e.stopPropagation()} style={{
         width: '100%', maxWidth: 430, background: C.surface,
         borderRadius: '28px 28px 0 0', padding: '20px 20px 44px',
         maxHeight: '92dvh', overflowY: 'auto',
@@ -94,29 +104,21 @@ export default function DetailSheet({
         <Lbl>Task name</Lbl>
         <input value={title} onChange={(e) => setTitle(e.target.value)} style={inputSt} />
 
-        <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1 }}>
-            <Lbl>Category</Lbl>
-            <select value={cat} onChange={(e) => setCat(e.target.value as TaskCategory)} style={selectSt}>
-              {Object.keys(CAT_ICON).map((c) => <option key={c}>{c}</option>)}
-            </select>
-          </div>
-          <div style={{ flex: 1 }}>
-            <Lbl>Status</Lbl>
-            <select value={status} onChange={(e) => setStatus(e.target.value as TaskStatus)} style={selectSt}>
-              {Object.keys(STATUS).map((s) => <option key={s}>{s}</option>)}
-            </select>
-          </div>
-        </div>
+        <Lbl>Category</Lbl>
+        <select value={cat} onChange={(e) => setCat(e.target.value as TaskCategory)} style={selectSt}>
+          {Object.keys(CAT_ICON).map((c) => <option key={c}>{c}</option>)}
+        </select>
 
-        <div style={{ display: 'flex', gap: 8 }}>
-          {([['Start', startTime, setStartTime], ['End', endTime, setEndTime]] as const).map(([lbl, val, set]) => (
-            <div key={lbl} style={{ flex: 1 }}>
-              <Lbl>{lbl}</Lbl>
-              <input type="time" value={val} onChange={(e) => set(e.target.value)} style={inputSt} />
-            </div>
-          ))}
-        </div>
+        <Lbl>Status</Lbl>
+        <select value={status} onChange={(e) => setStatus(e.target.value as TaskStatus)} style={selectSt}>
+          {Object.keys(STATUS).map((s) => <option key={s}>{s}</option>)}
+        </select>
+
+        <Lbl>Start</Lbl>
+        <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} style={inputSt} />
+
+        <Lbl>End</Lbl>
+        <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} style={inputSt} />
 
         {/* Progress slider */}
         <div style={{ marginBottom: 14 }}>

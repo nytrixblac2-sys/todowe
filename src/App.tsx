@@ -16,24 +16,26 @@ function BottomNav() {
   const tab       = location.pathname === '/dashboard' ? 'dashboard' : 'tasks'
 
   return (
+    // Outer div is full-width so C.surface fills the entire bottom of the screen on all devices
     <div style={{
-      position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-      width: '100%', maxWidth: 430, background: C.surface,
-      borderTop: `1.5px solid ${C.muted}22`, display: 'flex',
-      padding: `10px 0 calc(10px + env(safe-area-inset-bottom))`, zIndex: 40, transition: 'background .3s',
+      position: 'fixed', bottom: 0, left: 0, right: 0,
+      background: C.surface, borderTop: `1.5px solid ${C.muted}22`,
+      zIndex: 40, transition: 'background .3s',
     }}>
-      {[
-        { id: 'tasks',     icon: '▣', label: 'Tasks',     path: '/tasks'     },
-        { id: 'dashboard', icon: '◈', label: 'Dashboard', path: '/dashboard' },
-      ].map((n) => (
-        <button key={n.id} onClick={() => navigate(n.path)} style={{
-          flex: 1, background: 'none', border: 'none', cursor: 'pointer',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-        }}>
-          <span style={{ fontSize: 22, color: tab === n.id ? C.accent : C.muted, transition: 'color .2s' }}>{n.icon}</span>
-          <span style={{ fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', fontFamily: "'DM Mono', monospace", color: tab === n.id ? C.accent : C.muted, transition: 'color .2s' }}>{n.label}</span>
-        </button>
-      ))}
+      <div style={{ maxWidth: 430, margin: '0 auto', display: 'flex', padding: `10px 0 calc(10px + env(safe-area-inset-bottom))` }}>
+        {[
+          { id: 'tasks',     icon: '▣', label: 'Tasks',     path: '/tasks'     },
+          { id: 'dashboard', icon: '◈', label: 'Dashboard', path: '/dashboard' },
+        ].map((n) => (
+          <button key={n.id} onClick={() => navigate(n.path)} style={{
+            flex: 1, background: 'none', border: 'none', cursor: 'pointer',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+          }}>
+            <span style={{ fontSize: 22, color: tab === n.id ? C.accent : C.muted, transition: 'color .2s' }}>{n.icon}</span>
+            <span style={{ fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', fontFamily: "'DM Mono', monospace", color: tab === n.id ? C.accent : C.muted, transition: 'color .2s' }}>{n.label}</span>
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

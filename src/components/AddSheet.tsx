@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { C, STATUS, CAT_ICON, REMINDER_OPTIONS, AVATAR_COLORS, colorForEmail, initialsFor } from '../theme'
 import { Av } from './Avatar'
 import CustomReminderInput from './CustomReminderInput'
@@ -67,6 +67,15 @@ export default function AddSheet({
   const [saveErr,   setSaveErr]   = useState('')
 
   const allPeople: (AuthUser | Person)[] = [currentUser, ...people]
+  const sheetRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const prevent = (e: TouchEvent) => {
+      if (!sheetRef.current?.contains(e.target as Node)) e.preventDefault()
+    }
+    document.addEventListener('touchmove', prevent, { passive: false })
+    return () => document.removeEventListener('touchmove', prevent)
+  }, [])
 
   function togglePerson(id: string) {
     setSelIds((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id])
@@ -109,8 +118,8 @@ export default function AddSheet({
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#000a', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 200 }} onClick={onClose} onTouchMove={(e) => e.preventDefault()}>
-      <div onClick={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()} style={{
+    <div style={{ position: 'fixed', inset: 0, background: '#000a', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 200 }} onClick={onClose}>
+      <div ref={sheetRef} onClick={(e) => e.stopPropagation()} style={{
         width: '100%', maxWidth: 430, background: C.surface,
         borderRadius: '28px 28px 0 0', padding: '20px 20px 40px',
         maxHeight: '92dvh', overflowY: 'auto',
