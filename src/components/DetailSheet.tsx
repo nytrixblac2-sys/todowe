@@ -78,8 +78,8 @@ export default function DetailSheet({
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#000a', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 200 }} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={{
+    <div style={{ position: 'fixed', inset: 0, background: '#000a', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 200 }} onClick={onClose} onTouchMove={(e) => e.preventDefault()}>
+      <div onClick={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()} style={{
         width: '100%', maxWidth: 430, background: C.surface,
         borderRadius: '28px 28px 0 0', padding: '20px 20px 44px',
         maxHeight: '92dvh', overflowY: 'auto',

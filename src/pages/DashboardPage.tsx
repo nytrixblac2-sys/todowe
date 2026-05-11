@@ -197,7 +197,7 @@ export default function DashboardPage({ onOpenProfile }: Props) {
       </div>
 
       {/* Scroll area */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px', paddingBottom: 'calc(100px + env(safe-area-inset-bottom))' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px', paddingBottom: 'calc(84px + env(safe-area-inset-bottom))' }}>
 
         {/* Smart message card */}
         <div style={{

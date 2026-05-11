@@ -76,6 +76,18 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
 
     if (newNudges.length > 0) {
       set((s) => ({ notifications: [...s.notifications, ...newNudges] }))
+
+      // Fire system notifications for each new nudge so they appear on the phone
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        for (const n of newNudges) {
+          new Notification(`Todowe — ${n.title}`, {
+            body:  n.body,
+            icon:  '/pwa-192x192.png',
+            badge: '/pwa-192x192.png',
+            tag:   `${n.task_id}:${n.type}`, // deduplicates if triggered again
+          })
+        }
+      }
     }
   },
 

@@ -216,7 +216,7 @@ export default function TasksPage({ onOpenProfile, openTaskId, onClearOpenTaskId
       </div>
 
       {/* Scroll area — timeline */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 20px', paddingBottom: 'calc(100px + env(safe-area-inset-bottom))' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 20px', paddingBottom: 'calc(84px + env(safe-area-inset-bottom))' }}>
         {error ? (
           <div style={{ textAlign: 'center', paddingTop: 50 }}>
             <div style={{ fontSize: 28, opacity: .2, marginBottom: 14, color: C.text }}>◎</div>
@@ -271,7 +271,7 @@ export default function TasksPage({ onOpenProfile, openTaskId, onClearOpenTaskId
 
       {/* FAB */}
       <button onClick={() => setShowAdd(true)} style={{
-        position: 'fixed', bottom: 'calc(82px + env(safe-area-inset-bottom))', right: 'max(20px, calc(50% - 195px))',
+        position: 'fixed', bottom: 'calc(68px + env(safe-area-inset-bottom))', right: 'max(20px, calc(50% - 195px))',
         width: 54, height: 54, borderRadius: '50%',
         background: C.accent, border: 'none', fontSize: 26,
         color: isDark ? C.bg : '#ffffff',

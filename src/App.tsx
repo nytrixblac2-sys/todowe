@@ -20,7 +20,7 @@ function BottomNav() {
       position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
       width: '100%', maxWidth: 430, background: C.surface,
       borderTop: `1.5px solid ${C.muted}22`, display: 'flex',
-      padding: `10px 0 calc(24px + env(safe-area-inset-bottom))`, zIndex: 40, transition: 'background .3s',
+      padding: `10px 0 calc(10px + env(safe-area-inset-bottom))`, zIndex: 40, transition: 'background .3s',
     }}>
       {[
         { id: 'tasks',     icon: '▣', label: 'Tasks',     path: '/tasks'     },
@@ -47,7 +47,16 @@ function AppShell() {
   const [openTaskId,  setOpenTaskId]  = useState<string | null>(null)
   const [online,      setOnline]      = useState(navigator.onLine)
 
+  const unreadCount = useNotificationStore((s) => s.notifications.filter((n) => !n.read && !n.cleared).length)
+
   swapTheme(isDark)
+
+  // Sync app icon badge with unread notification count (Badging API — Chrome/Android + Safari iOS 16.4+ PWA)
+  useEffect(() => {
+    const nav = navigator as Navigator & { setAppBadge?: (n: number) => void; clearAppBadge?: () => void }
+    if (unreadCount > 0) nav.setAppBadge?.(unreadCount)
+    else nav.clearAppBadge?.()
+  }, [unreadCount])
 
   useEffect(() => {
     const on  = () => setOnline(true)
