@@ -11,7 +11,6 @@ function fmtTime(t: string): string {
 
 interface NotificationStore {
   notifications: Notification[]
-  seeded:        boolean
   seedNudges:    (tasks: Record<string, Task[]>, userId: string) => void
   markRead:      (id: string) => void
   clearOne:      (id: string) => void
@@ -23,13 +22,16 @@ interface NotificationStore {
 
 export const useNotificationStore = create<NotificationStore>((set, get) => ({
   notifications: [],
-  seeded: false,
 
   seedNudges: (tasks, userId) => {
-    if (get().seeded) return
     const todayStr = new Date().toISOString().slice(0, 10)
     const nowMs    = Date.now()
-    const nudges: Notification[] = []
+    const existing = get().notifications
+
+    // Track which task+type pairs already exist (cleared or not) to avoid duplicates
+    const existingKeys = new Set(existing.map((n) => `${n.task_id}:${n.type}`))
+
+    const newNudges: Notification[] = []
 
     for (const [date, dayTasks] of Object.entries(tasks)) {
       for (const t of dayTasks) {
@@ -37,8 +39,8 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
 
         const endMs = new Date(`${date}T${t.end_time}:00`).getTime()
 
-        if (endMs < nowMs) {
-          nudges.push({
+        if (endMs < nowMs && !existingKeys.has(`${t.id}:nudge_overdue`)) {
+          newNudges.push({
             id:         makeId(),
             user_id:    userId,
             task_id:    t.id,
@@ -52,8 +54,11 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
           continue
         }
 
-        if (t.status === 'running' && t.progress < 30 && date <= todayStr) {
-          nudges.push({
+        if (
+          t.status === 'running' && t.progress < 30 &&
+          date <= todayStr && !existingKeys.has(`${t.id}:nudge_stalled`)
+        ) {
+          newNudges.push({
             id:         makeId(),
             user_id:    userId,
             task_id:    t.id,
@@ -68,7 +73,9 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
       }
     }
 
-    set({ notifications: nudges, seeded: true })
+    if (newNudges.length > 0) {
+      set((s) => ({ notifications: [...s.notifications, ...newNudges] }))
+    }
   },
 
   markRead: (id) => set((s) => ({
@@ -91,5 +98,5 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     notifications: s.notifications.filter((n) => !n.cleared),
   })),
 
-  reset: () => set({ notifications: [], seeded: false }),
+  reset: () => set({ notifications: [] }),
 }))

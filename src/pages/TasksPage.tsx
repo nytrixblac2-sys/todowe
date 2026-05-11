@@ -7,6 +7,7 @@ import { usePeopleStore } from '../store/usePeopleStore'
 import { useProjectStore } from '../store/useProjectStore'
 import { useNotificationStore } from '../store/useNotificationStore'
 import { useGreeting } from '../hooks/useGreeting'
+import { useReminderScheduler } from '../hooks/useReminderScheduler'
 import { Av } from '../components/Avatar'
 import DayStrip from '../components/DayStrip'
 import TaskCard from '../components/TaskCard'
@@ -49,6 +50,7 @@ export default function TasksPage({ onOpenProfile, openTaskId, onClearOpenTaskId
   const [editing,   setEditing]   = useState<Task | null>(null)
 
   const greeting = useGreeting(user?.name.split(' ')[0] ?? '')
+  useReminderScheduler(tasks)
 
   useEffect(() => {
     if (!user) return
@@ -146,7 +148,7 @@ export default function TasksPage({ onOpenProfile, openTaskId, onClearOpenTaskId
   if (!user) return null
 
   return (
-    <div style={{ maxWidth: 430, margin: '0 auto', minHeight: '100dvh', background: C.bg, display: 'flex', flexDirection: 'column', position: 'relative', transition: 'background .25s' }}>
+    <div style={{ maxWidth: 430, margin: '0 auto', height: '100dvh', background: C.bg, display: 'flex', flexDirection: 'column', position: 'relative', transition: 'background .25s', overflow: 'hidden' }}>
 
       {/* Header */}
       <div style={{ padding: '48px 20px 0', flexShrink: 0 }}>

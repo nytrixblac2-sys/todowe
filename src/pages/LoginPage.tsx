@@ -60,7 +60,7 @@ export default function LoginPage() {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', minHeight: '100dvh',
+      justifyContent: 'center', height: '100dvh', overflowY: 'auto',
       padding: '0 28px', background: C.bg, transition: 'background .25s',
     }}>
       {/* Logo */}

@@ -8,8 +8,9 @@ const style = document.createElement('style')
 style.textContent = `
   ${fontImport}
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { height: 100%; }
+  html, body { height: 100%; overflow: hidden; overscroll-behavior: none; touch-action: manipulation; }
   body { transition: background 0.25s ease; }
+  #root { height: 100%; overflow: hidden; }
   ::-webkit-scrollbar { display: none; }
   * { scrollbar-width: none; }
   @keyframes fadeUp {
