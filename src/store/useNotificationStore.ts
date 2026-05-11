@@ -37,7 +37,8 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
       for (const t of dayTasks) {
         if (t.status === 'completed' || t.status === 'rejected') continue
 
-        const endMs = new Date(`${date}T${t.end_time}:00`).getTime()
+        // Supabase time columns return "HH:MM:SS" — omit ":00" suffix to avoid invalid date string
+        const endMs = new Date(`${date}T${t.end_time}`).getTime()
 
         if (endMs < nowMs && !existingKeys.has(`${t.id}:nudge_overdue`)) {
           newNudges.push({

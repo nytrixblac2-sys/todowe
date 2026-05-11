@@ -28,8 +28,6 @@ export function useReminderScheduler(tasks: Record<string, Task[]>) {
   }, [])
 
   useEffect(() => {
-    if (!permitted.current) return
-
     // Clear previous timers
     timers.current.forEach(clearTimeout)
     timers.current = []
@@ -41,7 +39,8 @@ export function useReminderScheduler(tasks: Record<string, Task[]>) {
         if (!task.reminders || task.reminders.length === 0) continue
         if (task.status === 'completed' || task.status === 'rejected') continue
 
-        const startMs = new Date(`${task.date}T${task.start_time}:00`).getTime()
+        // Supabase time columns return "HH:MM:SS" — Date.parse handles it correctly without appending ":00"
+        const startMs = new Date(`${task.date}T${task.start_time}`).getTime()
 
         for (const r of task.reminders) {
           const mins   = parseInt(r)

@@ -61,7 +61,7 @@ export default function InstallBanner() {
 
   return (
     <div style={{
-      position: 'fixed', bottom: 86, left: '50%', transform: 'translateX(-50%)',
+      position: 'fixed', bottom: 'calc(86px + env(safe-area-inset-bottom))', left: '50%', transform: 'translateX(-50%)',
       width: 'calc(100% - 40px)', maxWidth: 390,
       background: C.surface, borderRadius: 18,
       border: `1.5px solid ${C.accent}33`,

@@ -13,10 +13,12 @@ export const useThemeStore = create<ThemeStore>((set) => ({
     set((s) => {
       const next = !s.isDark
       swapTheme(next)
+      document.body.style.background = next ? '#0f1629' : '#f0f3fa'
       return { isDark: next }
     }),
   setDark: (v) => {
     swapTheme(v)
+    document.body.style.background = v ? '#0f1629' : '#f0f3fa'
     set({ isDark: v })
   },
 }))

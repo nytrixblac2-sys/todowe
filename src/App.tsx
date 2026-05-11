@@ -20,7 +20,7 @@ function BottomNav() {
       position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
       width: '100%', maxWidth: 430, background: C.surface,
       borderTop: `1.5px solid ${C.muted}22`, display: 'flex',
-      padding: '10px 0 24px', zIndex: 40, transition: 'background .3s',
+      padding: `10px 0 calc(24px + env(safe-area-inset-bottom))`, zIndex: 40, transition: 'background .3s',
     }}>
       {[
         { id: 'tasks',     icon: '▣', label: 'Tasks',     path: '/tasks'     },
