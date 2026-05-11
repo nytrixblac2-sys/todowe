@@ -18,6 +18,7 @@ export interface TaskInput {
 interface TaskStore {
   tasks: Record<string, Task[]> // keyed by YYYY-MM-DD
   loading: boolean
+  error: string | null
   fetchAll: (userId: string) => Promise<void>
   addTask: (input: TaskInput, ownerId: string) => Promise<Task>
   updateTask: (id: string, input: Partial<TaskInput>) => Promise<void>
@@ -27,9 +28,10 @@ interface TaskStore {
 export const useTaskStore = create<TaskStore>((set, get) => ({
   tasks: {},
   loading: false,
+  error: null,
 
   fetchAll: async (userId) => {
-    set({ loading: true })
+    set({ loading: true, error: null })
 
     // Simple tasks-only query — no embedded resources (avoids FK-to-auth.users issues)
     const { data, error } = await supabase
@@ -41,7 +43,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
     if (error) {
       console.error('[fetchAll] tasks error:', error.message)
-      set({ loading: false })
+      set({ loading: false, error: error.message })
       return
     }
 

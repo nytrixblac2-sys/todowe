@@ -149,7 +149,7 @@ export default function DashboardPage({ onOpenProfile }: Props) {
   }
 
   return (
-    <div style={{ maxWidth: 430, margin: '0 auto', minHeight: '100dvh', background: C.bg, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ maxWidth: 430, margin: '0 auto', minHeight: '100dvh', background: C.bg, display: 'flex', flexDirection: 'column', transition: 'background .25s' }}>
 
       {/* Header */}
       <div style={{ padding: '48px 20px 0', flexShrink: 0 }}>

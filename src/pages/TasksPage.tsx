@@ -12,6 +12,7 @@ import DayStrip from '../components/DayStrip'
 import TaskCard from '../components/TaskCard'
 import AddSheet, { type AddTaskPayload } from '../components/AddSheet'
 import DetailSheet from '../components/DetailSheet'
+import { SkeletonLoader } from '../components/SkeletonCard'
 import type { Task, Person } from '../types'
 
 function dk(d: Date) { return d.toISOString().slice(0, 10) }
@@ -34,7 +35,7 @@ export default function TasksPage({ onOpenProfile, openTaskId, onClearOpenTaskId
 
   const { user }                            = useAuthStore()
   const { isDark, toggle: toggleTheme }     = useThemeStore()
-  const { tasks, fetchAll, addTask, updateTask, deleteTask } = useTaskStore()
+  const { tasks, fetchAll, addTask, updateTask, deleteTask, loading, error } = useTaskStore()
   const { people, fetchPeople, addByEmail } = usePeopleStore()
   const { projects, fetchProjects, addProject } = useProjectStore()
   const { seedNudges }                      = useNotificationStore()
@@ -145,7 +146,7 @@ export default function TasksPage({ onOpenProfile, openTaskId, onClearOpenTaskId
   if (!user) return null
 
   return (
-    <div style={{ maxWidth: 430, margin: '0 auto', minHeight: '100dvh', background: C.bg, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+    <div style={{ maxWidth: 430, margin: '0 auto', minHeight: '100dvh', background: C.bg, display: 'flex', flexDirection: 'column', position: 'relative', transition: 'background .25s' }}>
 
       {/* Header */}
       <div style={{ padding: '48px 20px 0', flexShrink: 0 }}>
@@ -214,7 +215,21 @@ export default function TasksPage({ onOpenProfile, openTaskId, onClearOpenTaskId
 
       {/* Scroll area — timeline */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '14px 20px 100px' }}>
-        {dayTasks.length === 0 ? (
+        {error ? (
+          <div style={{ textAlign: 'center', paddingTop: 50 }}>
+            <div style={{ fontSize: 28, opacity: .2, marginBottom: 14, color: C.text }}>◎</div>
+            <div style={{ color: '#f87171', fontFamily: "'DM Mono', monospace", fontSize: 12, marginBottom: 16 }}>
+              Failed to load tasks
+            </div>
+            <button onClick={() => user && fetchAll(user.id)} style={{
+              background: C.accent, color: C.bg, border: 'none', borderRadius: 12,
+              padding: '10px 24px', fontFamily: "'Space Grotesk', sans-serif",
+              fontWeight: 700, fontSize: 13, cursor: 'pointer',
+            }}>Try again</button>
+          </div>
+        ) : loading ? (
+          <SkeletonLoader />
+        ) : dayTasks.length === 0 ? (
           <div style={{ textAlign: 'center', paddingTop: 50 }}>
             <div style={{ fontSize: 36, opacity: .15, marginBottom: 14, color: C.text }}>◈</div>
             <div style={{ color: C.muted, fontFamily: "'DM Mono', monospace", fontSize: 12 }}>Nothing scheduled</div>

@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage'
 import TasksPage from './pages/TasksPage'
 import DashboardPage from './pages/DashboardPage'
 import ProfileSheet from './components/ProfileSheet'
+import InstallBanner from './components/InstallBanner'
 
 function BottomNav() {
   const navigate  = useNavigate()
@@ -44,8 +45,17 @@ function AppShell() {
 
   const [showProfile, setShowProfile] = useState(false)
   const [openTaskId,  setOpenTaskId]  = useState<string | null>(null)
+  const [online,      setOnline]      = useState(navigator.onLine)
 
   swapTheme(isDark)
+
+  useEffect(() => {
+    const on  = () => setOnline(true)
+    const off = () => setOnline(false)
+    window.addEventListener('online',  on)
+    window.addEventListener('offline', off)
+    return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off) }
+  }, [])
 
   useEffect(() => { init() }, [init])
 
@@ -56,6 +66,18 @@ function AppShell() {
 
   return (
     <>
+      {/* Offline banner */}
+      {!online && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
+          background: C.amber, color: '#0f1629', textAlign: 'center',
+          padding: '7px 20px', fontFamily: "'DM Mono', monospace",
+          fontSize: 10, letterSpacing: .6, animation: 'slideDown .3s ease',
+        }}>
+          No internet — working from cache
+        </div>
+      )}
+
       <Routes>
         <Route path="/login" element={user ? <Navigate to="/tasks" replace /> : <LoginPage />} />
         <Route path="/tasks" element={user ? (
@@ -76,6 +98,8 @@ function AppShell() {
         ) : <Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to={user ? '/tasks' : '/login'} replace />} />
       </Routes>
+
+      {user && <InstallBanner />}
 
       {showProfile && user && (
         <ProfileSheet

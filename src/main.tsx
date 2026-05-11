@@ -9,7 +9,7 @@ style.textContent = `
   ${fontImport}
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
-  body { transition: background 0.3s; }
+  body { transition: background 0.25s ease; }
   ::-webkit-scrollbar { display: none; }
   * { scrollbar-width: none; }
   @keyframes fadeUp {
@@ -19,6 +19,14 @@ style.textContent = `
   @keyframes slideUp {
     from { transform: translateY(100%); opacity: 0; }
     to   { transform: none; opacity: 1; }
+  }
+  @keyframes slideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+  }
+  @keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position:  200% 0; }
   }
   select option { background: #16213e; }
   input[type="range"] { -webkit-appearance: none; appearance: none; }
