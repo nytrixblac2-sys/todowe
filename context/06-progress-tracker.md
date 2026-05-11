@@ -127,6 +127,15 @@ Additional fix applied after Phase 3:
 - [x] Shows confirmation message if email verification is required
 - [x] message field added to AuthStore for non-error info states
 
+### Post-launch fixes — Viewport, Notifications, Reminders
+- [x] Viewport lock: interactive-widget=overlays-content stops keyboard from resizing layout
+- [x] Viewport lock: user-scalable=no, maximum-scale=1.0 — no pinch zoom
+- [x] Viewport lock: html/body/root overflow:hidden + overscroll-behavior:none — no white-space bleed or rubber-banding
+- [x] Page containers: minHeight→height:100dvh + overflow:hidden — locked to screen, can't pan
+- [x] In-app notifications: removed one-shot seeded flag — nudges now regenerate on every tasks load
+- [x] Deduplication by task_id+type so cleared nudges are not recreated
+- [x] Browser reminder alerts: useReminderScheduler hook requests Notification permission, schedules setTimeout per reminder, fires native Notification API when timer fires — works while app is open or backgrounded as PWA
+
 ## Open Questions
 
 - Should task_reminders be processed by an n8n workflow on Railway or a Supabase Edge Function? Edge Function is simpler and free — decide before Phase 4.
