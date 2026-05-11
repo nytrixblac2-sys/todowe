@@ -4,7 +4,7 @@ Update this file at the end of every session. It is the handoff document between
 
 ## Current Phase
 
-- **ALL PHASES COMPLETE** — app is production-ready at todowe.vercel.app
+- **ALL PHASES COMPLETE + Sign-Up added** — app is production-ready at todowe.vercel.app
 
 ## Current Goal
 
@@ -118,6 +118,14 @@ Additional fix applied after Phase 3:
 - [x] Loading skeleton — SkeletonCard shimmer loader shown while tasks are in flight
 
 **Phase 5 COMPLETE ✓ — ALL PHASES DONE — todowe.vercel.app is production-ready**
+
+### Post-launch addition — Sign Up
+- [x] LoginPage: Sign In / Sign Up tab toggle — single page, no separate route
+- [x] Sign Up form: name + email + password fields
+- [x] useAuthStore.signUp() — calls supabase.auth.signUp with full_name in user_metadata
+- [x] Auto sign-in if Supabase email confirmation is disabled
+- [x] Shows confirmation message if email verification is required
+- [x] message field added to AuthStore for non-error info states
 
 ## Open Questions
 
