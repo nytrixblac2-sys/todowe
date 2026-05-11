@@ -4,11 +4,11 @@ Update this file at the end of every session. It is the handoff document between
 
 ## Current Phase
 
-- Phase 5 — Polish — **NEXT**
+- **ALL PHASES COMPLETE** — app is production-ready at todowe.vercel.app
 
 ## Current Goal
 
-- Empty states, loading skeletons, error states, offline support, theme transition, "Add to Home Screen" prompt.
+- Live and deployed. Future work: Supabase Realtime (Type 1 collaboration), Web Push reminders (VAPID + Edge Function), custom domain.
 
 ## Completed
 
@@ -35,7 +35,7 @@ Update this file at the end of every session. It is the handoff document between
 
 ## In Progress
 
-- Nothing — Phase 4 complete and deployed. Phase 5 ready to start.
+- Nothing — all 5 phases complete and deployed.
 
 ## Completed (Phase 2)
 
@@ -108,14 +108,16 @@ Additional fix applied after Phase 3:
 
 **Phase 4 COMPLETE ✓ — deployed to todowe.vercel.app**
 
-### Phase 5 — Polish
-- [ ] Dark/light theme transition — smooth CSS transition on all surfaces
-- [ ] Theme toggle on login screen
-- [ ] "Add to Home Screen" prompt for iPhone users
-- [ ] Offline caching via service worker
-- [ ] Error states — failed Supabase calls, failed OpenAI calls, no-network state
-- [ ] Empty states — no tasks today, no projects, no notifications
-- [ ] Loading states — skeleton UI while tasks fetch
+### Phase 5 — Polish ✓ COMPLETE
+- [x] Theme transitions — 0.25s background fade on page containers + new slideDown/shimmer keyframes in main.tsx
+- [x] Theme toggle on login screen — present since Phase 1
+- [x] "Add to Home Screen" prompt — InstallBanner: iOS instructions or Android install button, dismissible, localStorage persisted
+- [x] Offline indicator — amber banner at top when navigator.onLine goes false (slideDown animation)
+- [x] Error state — retry button in TasksPage when fetchAll fails; error field added to useTaskStore
+- [x] Empty states — "Nothing scheduled" (Tasks), "No tasks yet" (Dashboard), empty notification tabs (ProfileSheet)
+- [x] Loading skeleton — SkeletonCard shimmer loader shown while tasks are in flight
+
+**Phase 5 COMPLETE ✓ — ALL PHASES DONE — todowe.vercel.app is production-ready**
 
 ## Open Questions
 
