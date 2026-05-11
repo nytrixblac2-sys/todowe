@@ -85,8 +85,11 @@ export default function DetailSheet({
         maxHeight: '92dvh', overflowY: 'auto',
         animation: 'slideUp .28s cubic-bezier(.34,1.2,.64,1)',
       }}>
-        <div style={{ width: 36, height: 4, background: C.muted + '44', borderRadius: 2, margin: '0 auto 22px' }} />
-        <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 800, fontSize: 20, color: C.text, marginBottom: 20 }}>Edit Task</div>
+        <div style={{ width: 36, height: 4, background: C.muted + '44', borderRadius: 2, margin: '0 auto 18px' }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 800, fontSize: 20, color: C.text }}>Edit Task</div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 20, lineHeight: 1, padding: 4 }}>✕</button>
+        </div>
 
         <Lbl>Task name</Lbl>
         <input value={title} onChange={(e) => setTitle(e.target.value)} style={inputSt} />
@@ -215,12 +218,20 @@ export default function DetailSheet({
           </div>
         )}
 
-        <button onClick={save} style={{
-          width: '100%', background: C.accent, color: C.bg, border: 'none',
-          borderRadius: 16, padding: 15,
-          fontFamily: "'Space Grotesk', sans-serif", fontWeight: 800, fontSize: 16,
-          cursor: 'pointer', boxShadow: `0 8px 24px ${C.accent}44`, letterSpacing: .3,
-        }}>Save Changes</button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onClose} style={{
+            flex: 1, background: C.card, color: C.muted, border: 'none',
+            borderRadius: 16, padding: 15,
+            fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15,
+            cursor: 'pointer',
+          }}>Cancel</button>
+          <button onClick={save} style={{
+            flex: 2, background: C.accent, color: C.bg, border: 'none',
+            borderRadius: 16, padding: 15,
+            fontFamily: "'Space Grotesk', sans-serif", fontWeight: 800, fontSize: 16,
+            cursor: 'pointer', boxShadow: `0 8px 24px ${C.accent}44`, letterSpacing: .3,
+          }}>Save Changes</button>
+        </div>
       </div>
     </div>
   )
